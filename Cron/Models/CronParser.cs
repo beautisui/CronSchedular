@@ -6,8 +6,7 @@ public class CronParser
     {
         var fields = expression.Split(" ");
         
-        if (fields.Length != 5)
-            throw new ArgumentException("Invalid cron expression");
+        if (fields.Length != 5) throw new ArgumentException("Invalid cron expression");
         
         return new CronExpression
         {
@@ -21,7 +20,7 @@ public class CronParser
     
     private static List<int> ExtractFields(string field, int min, int max)
     {
-        var result = new HashSet<int>();
+        var fieldValues = new HashSet<int>();
 
         if (field == "*")
         {
@@ -34,22 +33,22 @@ public class CronParser
         {
             if (section.Contains('/'))
             {
-                AddSteppedRange(result, section, min, max);
+                AddSteppedRange(fieldValues, section, min, max);
             }
             else if (section.Contains('-'))
             {
-                AddRange(result, section);
+                AddRange(fieldValues, section);
             }
             else
             {
-                AddSingleValue(result, section);
+                fieldValues.Add(int.Parse(section));
             }
         }
 
-        return result.OrderBy(n => n).ToList();
+        return fieldValues.OrderBy(n => n).ToList();
     }
 
-    private static void AddSteppedRange(HashSet<int> result, string section, int min, int max)
+    private static void AddSteppedRange(HashSet<int> fieldValues, string section, int min, int max)
     {
         var parts = section.Split('/');
         var rangePart = parts[0];
@@ -68,27 +67,22 @@ public class CronParser
             start = int.Parse(rangePart);
         }
 
-        for (int i = start; i <= end; i += step)
+        for (var i = start; i <= end; i += step)
         {
-            result.Add(i);
+            fieldValues.Add(i);
         }
     }
 
-    private static void AddRange(HashSet<int> result, string section)
+    private static void AddRange(HashSet<int> fieldValues, string section)
     {
         var parts = section.Split('-');
         var start = int.Parse(parts[0]);
         var end = int.Parse(parts[1]);
 
-        for (int i = start; i <= end; i++)
+        for (var i = start; i <= end; i++)
         {
-            result.Add(i);
+            fieldValues.Add(i);
         }
-    }
-
-    private static void AddSingleValue(HashSet<int> result, string section)
-    {
-        result.Add(int.Parse(section));
     }
 }
     
